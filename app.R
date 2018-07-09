@@ -11,6 +11,7 @@ library(shiny)
 library(dplyr)
 library(ggplot2)
 library(forcats)
+library(DT)
 
 
 
@@ -59,20 +60,18 @@ ui <- fluidPage(
                    value = 0),
       numericInput(inputId = "maxPrice",
                    label = "Maximum price to view:",
-                   value = 2300),
-      numericInput(inputId = "obs",
-                   label = "Number of observations to view:",
-                   value = 10)
+                   value = 2300)
     ),
     
     # Main panel for displaying outputs ----
     mainPanel(
-      # Output: HTML table with requested number of observations ----
-      tableOutput("view"),
+      # Create a new row for the table.
+      DT::dataTableOutput("table"),
       # Output: Histogram
       plotOutput(outputId = "distPlot"),
       # Output: Verbatim text for data summary ----
       verbatimTextOutput("summary")
+      
 
     )
   )
@@ -119,11 +118,10 @@ server <- function(input, output) {
 #    dataset <- count_countries()
     summary(dataset)
   })
-   
-  # Show the first "n" observations ----
-  output$view <- renderTable({
-    head(table_output(), n = input$obs)
-  })
+  
+  output$table <- DT::renderDataTable(DT::datatable({
+    table_output()
+  }))
   
   output$distPlot <- renderPlot({
 #    plot_data <- print(ggplot(table_output(), aes(x=country, fill=country))
