@@ -1,55 +1,19 @@
-# load data
-wine_reviews <- read.csv("winemag-data_first150k.csv")
-
-
-# filter all out without price value
-all_with_price <- select(filter(wine_reviews, trimws(price) !=""), c(country, points, price, winery, variety, designation))
-# add column ratio
-all_with_price <- transform(all_with_price, price_points_ratio = price / points)
-attach(all_with_price)
-all_with_price_sorted <- all_with_price[order(price_points_ratio),]
-
-all_countries <- unique(all_with_price$country)
-all_countries_list <- as.list(as.data.frame(t(all_countries)))
-all_countries_list <- c("all", all_countries_list)
-
-all_varieties <- unique(all_with_price$variety)
-all_varieties_list <- as.list(as.data.frame(t(all_varieties)))
-all_varieties_list <- c("all", all_varieties_list)
+source('helper.R')
 
 # Define server logic
 server <- function(input, output) {
-  
+  # reactive table dataset
   table_output <- reactive({
-    if (input$country == "all" && input$variety == "all"){
-      all_with_price_sorted_output <- select(filter
-                                             (all_with_price_sorted, 
-                                               points >= input$minRating,
-                                               price <= input$maxPrice),
-                                             c(country, points, price, price_points_ratio, winery, variety, designation))
-    } else if (input$country != "all" && input$variety == "all") {
-      all_with_price_sorted_output <- select(filter
-                                             (all_with_price_sorted, 
-                                               trimws(points) >= input$minRating,
-                                               trimws(price) <= input$maxPrice,
-                                               trimws(country) == input$country),
-                                             c(country, points, price, price_points_ratio, winery, variety, designation))
-    } else if (input$country == "all" && input$variety != "all") {
-      all_with_price_sorted_output <- select(filter
-                                             (all_with_price_sorted, 
-                                               trimws(points) >= input$minRating,
-                                               trimws(price) <= input$maxPrice,
-                                               trimws(variety) == input$variety),
-                                             c(country, points, price, price_points_ratio, winery, variety, designation))
-    } else {
-      all_with_price_sorted_output <- select(filter
-                                             (all_with_price_sorted, 
-                                               trimws(points) >= input$minRating,
-                                               trimws(price) <= input$maxPrice,
-                                               trimws(country) == input$country,
-                                               trimws(variety) == input$variety),
-                                             c(country, points, price, price_points_ratio, winery, variety, designation))
-    }
+    filter_by_country_variety_minRating_maxPrice(input$country, input$variety, input$minRating, input$maxPrice)
+  })
+  
+  # reactive filter options
+  variety_output <- reactive({
+    find_all_unique_varieties_by_country(input$country_by_variety)
+  })
+  
+  output$variableUI <- renderUI({
+    selectInput(inputId = "input$variety_by_variety", label = "Choose the variety of your wine pending on the country:", choices = variety_output())
   })
   
   # Generate a summary of the dataset ----
@@ -58,15 +22,26 @@ server <- function(input, output) {
     summary(dataset)
   })
   
-  output$table <- DT::renderDataTable(DT::datatable({
+  output$table_all_data <- DT::renderDataTable(DT::datatable({
     table_output()
   }))
   
-  output$distPlot <- renderPlot({
+  output$distPlot_count_country <- renderPlot({
     plot_data <- print(ggplot(table_output(), aes(x=fct_rev(fct_infreq(country))))
                        + geom_bar(stat = "count"))
     plot_data + coord_flip()
     
   })
+  
+  output$distPlot_count_variety <- renderPlot({
+    plot_data <- print(ggplot(table_output(), aes(x=fct_rev(fct_infreq(variety))))
+                       + geom_bar(stat = "count"))
+    plot_data + coord_flip()
+    
+  })
+  
+  output$table <- renderTable(
+    head(variety_output())
+  )
   
 }
