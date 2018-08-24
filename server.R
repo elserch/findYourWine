@@ -1,3 +1,5 @@
+source("helper.R")
+
 # load data
 wine_reviews <- read.csv("winemag-data_first150k.csv")
 
@@ -20,53 +22,88 @@ all_varieties_list <- c("all", all_varieties_list)
 # Define server logic
 server <- function(input, output) {
   
-  table_output <- reactive({
-    if (input$country == "all" && input$variety == "all"){
-      all_with_price_sorted_output <- select(filter
-                                             (all_with_price_sorted, 
-                                               points >= input$minRating,
-                                               price <= input$maxPrice),
-                                             c(country, points, price, price_points_ratio, winery, variety, designation))
-    } else if (input$country != "all" && input$variety == "all") {
-      all_with_price_sorted_output <- select(filter
-                                             (all_with_price_sorted, 
-                                               trimws(points) >= input$minRating,
-                                               trimws(price) <= input$maxPrice,
-                                               trimws(country) == input$country),
-                                             c(country, points, price, price_points_ratio, winery, variety, designation))
-    } else if (input$country == "all" && input$variety != "all") {
-      all_with_price_sorted_output <- select(filter
-                                             (all_with_price_sorted, 
-                                               trimws(points) >= input$minRating,
-                                               trimws(price) <= input$maxPrice,
-                                               trimws(variety) == input$variety),
-                                             c(country, points, price, price_points_ratio, winery, variety, designation))
-    } else {
-      all_with_price_sorted_output <- select(filter
-                                             (all_with_price_sorted, 
-                                               trimws(points) >= input$minRating,
-                                               trimws(price) <= input$maxPrice,
-                                               trimws(country) == input$country,
-                                               trimws(variety) == input$variety),
-                                             c(country, points, price, price_points_ratio, winery, variety, designation))
-    }
+  ####### REACTIVE #######
+  
+  table_output_all_data <- reactive({
+    all_with_price_sorted_output <- find_wine_by_variety_and_country(
+      all_with_price_sorted, input$variety, input$country, input$minRating, input$maxPrice)
+  })
+  
+
+  
+  ######## OUTPUT ########
+  
+  ######## OUTPUT: Find the most inexpensive wine #######
+  output$all_varieties = renderUI({
+    selectInput(
+      inputId = "variety",
+      label = "Choose the variety of your wine:",
+      choices = c(all_varieties_list)
+    )
+  })
+  
+  output$all_countries = renderUI({
+    selectInput(
+      inputId = "country",
+      label = "Choose the country of your wine:",
+      choices = c(all_countries_list)
+    )
   })
   
   # Generate a summary of the dataset ----
   output$summary <- renderPrint({
-    dataset <- table_output()
+    dataset <- table_output_all_data()
     summary(dataset)
   })
   
-  output$table <- DT::renderDataTable(DT::datatable({
-    table_output()
+  output$table_all_data <- DT::renderDataTable(DT::datatable({
+    table_output_all_data()
   }))
   
   output$distPlot <- renderPlot({
-    plot_data <- print(ggplot(table_output(), aes(x=fct_rev(fct_infreq(country))))
+    plot_data <- print(ggplot(table_output_all_data(), aes(x=fct_rev(fct_infreq(country))))
                        + geom_bar(stat = "count"))
     plot_data + coord_flip()
-    
   })
+
+  ######## OUTPUT: Find the wine for your country #######
+  
+  table_output_summary_varieties <- reactive({
+    summary_for_varieties <- summarize_varieties_for_country(all_with_price_sorted, input$country2)
+  })
+  
+  output_country_heatmap <- reactive({
+    filtered_for_country <- summarize_for_country_heatmap(all_with_price_sorted, input$country2)
+  })
+  
+  output$all_countries2 = renderUI({
+    selectInput(
+      inputId = "country2",
+      label = "Choose the country of your wine:",
+      choices = c(all_countries_list)
+    )
+  })
+
+  output$table_varieties_for_country <- DT::renderDataTable(DT::datatable({
+    table_output_summary_varieties()
+  }))  
+  
+  output$plot <- renderPlot ({
+    data_heat <- output_country_heatmap()
+    base_size <- 9
+    
+    ggplot(data = data_heat, aes(x = variety, y = winery)) + 
+      geom_tile(aes(fill = mean_price), colour = "white") +
+      scale_fill_gradient(low = "white", high = "steelblue") +
+      theme_grey(base_size = base_size) +
+      labs(x = "", y = "") +
+      scale_x_discrete(expand = c(0, 0)) +
+      scale_y_discrete(expand = c(0, 0)) +
+      theme(legend.position = "none", 
+           axis.text.x = element_text(size = base_size * 0.8, angle = 330, hjust = 0, colour = "grey50"))
+  })
+  
+  ######## OUTPUT: Find the countries for your variety #######
+  
   
 }

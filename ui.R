@@ -1,32 +1,23 @@
-#library(shiny)
-library(dplyr)
 library(ggplot2)
 library(forcats)
 library(DT)
-
+#library(plotly)
 
 
 # Define UI for dataset viewer app ----
 ui <- fluidPage(navbarPage(title = 'find your wine!',
-       tabPanel('Basic Search',
+       tabPanel('Find the most inexpensive wine',
          # Sidebar layout with a input and output definitions ----
          sidebarLayout(
            # Sidebar panel for inputs ----
            sidebarPanel(
-             # Irgendwo hier muss ich beschreiben welche Daten ich verwende und welche Arten das sind
+
+             # Input: Selector for choosing dataset ----
+             uiOutput('all_varieties'),
              
              # Input: Selector for choosing dataset ----
-             selectInput(
-               inputId = "country",
-               label = "Choose the country of your wine:",
-               choices = c(all_countries_list)
-             ),
-             # Input: Selector for choosing dataset ----
-             selectInput(
-               inputId = "variety",
-               label = "Choose the variety of your wine:",
-               choices = c(all_varieties_list)
-             ),
+             uiOutput('all_countries'),
+             
              # Input: Numeric entry for number of obs to view ----
              numericInput(
                inputId = "minRating",
@@ -42,18 +33,34 @@ ui <- fluidPage(navbarPage(title = 'find your wine!',
            
            # Main panel for displaying outputs ----
            mainPanel(
-             # Create a new row for the table.
-             DT::dataTableOutput("table"),
-             # Output: Histogram
-             plotOutput(outputId = "distPlot"),
-             # Output: Verbatim text for data summary ----
-             verbatimTextOutput("summary")
-             
-             
+            # Create a new row for the table.
+            DT::dataTableOutput("table_all_data"),
+            # Output: Histogram
+            plotOutput(outputId = "distPlot"),
+            # Output: Verbatim text for data summary ----
+            verbatimTextOutput("summary")
            )
          )
        ),
-       tabPanel('Search for variety',
+       tabPanel('Find the wine for your country',
+            # Sidebar layout with a input and output definitions ----
+            sidebarLayout(
+              # Sidebar panel for inputs ----
+              sidebarPanel(
+                # Input: Selector for choosing dataset ----
+                uiOutput('all_countries2')
+              ),
+              # Main panel for displaying outputs ----
+              mainPanel(
+                # Create a new row for the table.
+                DT::dataTableOutput("table_varieties_for_country"),
+                
+                plotOutput("plot")
+                
+              )
+            )
+          ),
+       tabPanel('Find the countries for your variety',
                 # Sidebar layout with a input and output definitions ----
                 sidebarLayout(
                   # Sidebar panel for inputs ----
@@ -64,18 +71,6 @@ ui <- fluidPage(navbarPage(title = 'find your wine!',
                   mainPanel(
                     
                   )
-                  )),
-       tabPanel('Search for Country',
-                # Sidebar layout with a input and output definitions ----
-                sidebarLayout(
-                  # Sidebar panel for inputs ----
-                  sidebarPanel(
-                    
-                  ),
-                  # Main panel for displaying outputs ----
-                  mainPanel(
-                    
-                  )
-
-                ))
+                )
+       )
        ))
