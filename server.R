@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 source("helper.R")
 
 # load data
@@ -48,6 +49,24 @@ server <- function(input, output) {
       label = "Choose the country of your wine:",
       choices = c(all_countries_list)
     )
+=======
+source('helper.R')
+
+# Define server logic
+server <- function(input, output) {
+  # reactive table dataset
+  table_output <- reactive({
+    filter_by_country_variety_minRating_maxPrice(input$country, input$variety, input$minRating, input$maxPrice)
+  })
+  
+  # reactive filter options
+  variety_output <- reactive({
+    find_all_unique_varieties_by_country(input$country_by_variety)
+  })
+  
+  output$variableUI <- renderUI({
+    selectInput(inputId = "input$variety_by_variety", label = "Choose the variety of your wine pending on the country:", choices = variety_output())
+>>>>>>> 0752584b24921702512723152907a95344d8d3ee
   })
   
   # Generate a summary of the dataset ----
@@ -57,11 +76,19 @@ server <- function(input, output) {
   })
   
   output$table_all_data <- DT::renderDataTable(DT::datatable({
+<<<<<<< HEAD
     table_output_all_data()
   }))
   
   output$distPlot <- renderPlot({
     plot_data <- print(ggplot(table_output_all_data(), aes(x=fct_rev(fct_infreq(country))))
+=======
+    table_output()
+  }))
+  
+  output$distPlot_count_country <- renderPlot({
+    plot_data <- print(ggplot(table_output(), aes(x=fct_rev(fct_infreq(country))))
+>>>>>>> 0752584b24921702512723152907a95344d8d3ee
                        + geom_bar(stat = "count"))
     plot_data + coord_flip()
   })
@@ -103,7 +130,20 @@ server <- function(input, output) {
            axis.text.x = element_text(size = base_size * 0.8, angle = 330, hjust = 0, colour = "grey50"))
   })
   
+<<<<<<< HEAD
   ######## OUTPUT: Find the countries for your variety #######
   
+=======
+  output$distPlot_count_variety <- renderPlot({
+    plot_data <- print(ggplot(table_output(), aes(x=fct_rev(fct_infreq(variety))))
+                       + geom_bar(stat = "count"))
+    plot_data + coord_flip()
+    
+  })
+  
+  output$table <- renderTable(
+    head(variety_output())
+  )
+>>>>>>> 0752584b24921702512723152907a95344d8d3ee
   
 }
