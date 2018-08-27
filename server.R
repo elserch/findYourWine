@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 source("helper.R")
 
 # load data
@@ -6,7 +5,7 @@ wine_reviews <- read.csv("winemag-data_first150k.csv")
 
 
 # filter all out without price value
-all_with_price <- select(filter(wine_reviews, trimws(price) !=""), c(country, points, price, winery, variety, designation))
+all_with_price <- select(filter(wine_reviews, trimws(price) != ""), c(country, points, price, winery, variety, designation))
 # add column ratio
 all_with_price <- transform(all_with_price, price_points_ratio = price / points)
 attach(all_with_price)
@@ -49,24 +48,6 @@ server <- function(input, output) {
       label = "Choose the country of your wine:",
       choices = c(all_countries_list)
     )
-=======
-source('helper.R')
-
-# Define server logic
-server <- function(input, output) {
-  # reactive table dataset
-  table_output <- reactive({
-    filter_by_country_variety_minRating_maxPrice(input$country, input$variety, input$minRating, input$maxPrice)
-  })
-  
-  # reactive filter options
-  variety_output <- reactive({
-    find_all_unique_varieties_by_country(input$country_by_variety)
-  })
-  
-  output$variableUI <- renderUI({
-    selectInput(inputId = "input$variety_by_variety", label = "Choose the variety of your wine pending on the country:", choices = variety_output())
->>>>>>> 0752584b24921702512723152907a95344d8d3ee
   })
   
   # Generate a summary of the dataset ----
@@ -76,19 +57,11 @@ server <- function(input, output) {
   })
   
   output$table_all_data <- DT::renderDataTable(DT::datatable({
-<<<<<<< HEAD
     table_output_all_data()
   }))
   
   output$distPlot <- renderPlot({
     plot_data <- print(ggplot(table_output_all_data(), aes(x=fct_rev(fct_infreq(country))))
-=======
-    table_output()
-  }))
-  
-  output$distPlot_count_country <- renderPlot({
-    plot_data <- print(ggplot(table_output(), aes(x=fct_rev(fct_infreq(country))))
->>>>>>> 0752584b24921702512723152907a95344d8d3ee
                        + geom_bar(stat = "count"))
     plot_data + coord_flip()
   })
@@ -100,7 +73,7 @@ server <- function(input, output) {
   })
   
   output_country_heatmap <- reactive({
-    filtered_for_country <- summarize_for_country_heatmap(all_with_price_sorted, input$country2)
+    filtered_for_country <- summarize_for_country_heatmap(all_with_price_sorted, input$country2, input$minCount)
   })
   
   output$all_countries2 = renderUI({
@@ -113,7 +86,7 @@ server <- function(input, output) {
 
   output$table_varieties_for_country <- DT::renderDataTable(DT::datatable({
     table_output_summary_varieties()
-  }))  
+  })) 
   
   output$plot <- renderPlot ({
     data_heat <- output_country_heatmap()
@@ -124,26 +97,14 @@ server <- function(input, output) {
       scale_fill_gradient(low = "white", high = "steelblue") +
       theme_grey(base_size = base_size) +
       labs(x = "", y = "") +
-      scale_x_discrete(expand = c(0, 0)) +
+      scale_x_discrete(expand = c(0, -2)) +
       scale_y_discrete(expand = c(0, 0)) +
+#      coord_fixed() +
       theme(legend.position = "none", 
            axis.text.x = element_text(size = base_size * 0.8, angle = 330, hjust = 0, colour = "grey50"))
-  })
+  }, height = 1500, width = 1500)
   
-<<<<<<< HEAD
   ######## OUTPUT: Find the countries for your variety #######
   
-=======
-  output$distPlot_count_variety <- renderPlot({
-    plot_data <- print(ggplot(table_output(), aes(x=fct_rev(fct_infreq(variety))))
-                       + geom_bar(stat = "count"))
-    plot_data + coord_flip()
-    
-  })
-  
-  output$table <- renderTable(
-    head(variety_output())
-  )
->>>>>>> 0752584b24921702512723152907a95344d8d3ee
   
 }

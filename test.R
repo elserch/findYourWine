@@ -2,7 +2,6 @@ install.packages("dplyr")
 install.packages("ggplot2")
 install.packages("forcats")
 install.packages("DT")
-install.packages("plotly")
 
 library(ggplot2)
 library(dplyr)
