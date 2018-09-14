@@ -1,7 +1,8 @@
-install.packages("dplyr")
+install.packages("dplyr", dependencies = TRUE)
 install.packages("ggplot2")
 install.packages("forcats")
 install.packages("DT")
+#install.packages("ddply")
 
 library(ggplot2)
 library(dplyr)

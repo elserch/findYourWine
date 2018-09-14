@@ -69,11 +69,13 @@ server <- function(input, output) {
   ######## OUTPUT: Find the wine for your country #######
   
   table_output_summary_varieties <- reactive({
-    summary_for_varieties <- summarize_varieties_for_country(all_with_price_sorted, input$country2)
+    summary_for_varieties <- summarize_varieties_for_country(all_with_price_sorted, input$country2, input$minPointsCountry
+                                                             , input$maxPointsCountry, input$minPriceCountry, input$maxPriceCountry)
   })
   
   output_country_heatmap <- reactive({
-    filtered_for_country <- summarize_for_country_heatmap(all_with_price_sorted, input$country2, input$minCount)
+    filtered_for_country <- summarize_for_country_heatmap(all_with_price_sorted, input$country2, input$minPointsCountry
+                                                          , input$maxPointsCountry, input$minPriceCountry, input$maxPriceCountry)
   })
   
   output$all_countries2 = renderUI({
@@ -88,7 +90,7 @@ server <- function(input, output) {
     table_output_summary_varieties()
   })) 
   
-  output$plot <- renderPlot ({
+  output$plot_country <- renderPlot ({
     data_heat <- output_country_heatmap()
     base_size <- 9
     
@@ -105,6 +107,42 @@ server <- function(input, output) {
   }, height = 1500, width = 1500)
   
   ######## OUTPUT: Find the countries for your variety #######
+  table_output_summary_countries <- reactive({
+    summary_for_varieties <- summarize_countries_for_variety(all_with_price_sorted, input$country2, input$minPointsVariety
+                                                             , input$maxPointsVariety, input$minPriceVariety, input$maxPriceVariety)
+  })
   
+  output_variety_heatmap <- reactive({
+    filtered_for_country <- summarize_for_variety_heatmap(all_with_price_sorted, input$country2, input$minPointsVariety
+                                                          , input$maxPointsVariety, input$minPriceVariety, input$maxPriceVariety)
+  })
+  
+  output$all_varieties2 = renderUI({
+    selectInput(
+      inputId = "variety2",
+      label = "Choose the variety of your wine:",
+      choices = c(all_varieties_list)
+    )
+  })
+  
+  output$table_countries_for_variety <- DT::renderDataTable(DT::datatable({
+    table_output_summary_countries()
+  })) 
+  
+  output$plot_variety <- renderPlot ({
+    data_heat <- output_variety_heatmap()
+    base_size <- 9
+    
+    ggplot(data = data_heat, aes(x = variety, y = winery)) + 
+      geom_tile(aes(fill = mean_price), colour = "white") +
+      scale_fill_gradient(low = "white", high = "steelblue") +
+      theme_grey(base_size = base_size) +
+      labs(x = "", y = "") +
+      scale_x_discrete(expand = c(0, -2)) +
+      scale_y_discrete(expand = c(0, 0)) +
+      #      coord_fixed() +
+      theme(legend.position = "none", 
+            axis.text.x = element_text(size = base_size * 0.8, angle = 330, hjust = 0, colour = "grey50"))
+  }, height = 1500, width = 1500)
   
 }

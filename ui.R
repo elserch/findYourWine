@@ -1,6 +1,8 @@
 library(ggplot2)
 library(forcats)
 library(DT)
+library(dplyr)
+library(plyr)
 
 # Define UI for dataset viewer app ----
 ui <- fluidPage(navbarPage(title = 'find your wine!',
@@ -48,16 +50,31 @@ ui <- fluidPage(navbarPage(title = 'find your wine!',
                 # Input: Selector for choosing dataset ----
                 uiOutput('all_countries2'),
                 numericInput(
-                  inputId = "minCount",
+                  inputId = "minPointsCountry",
                   label = "Minimum points to view:",
                   value = 0
+                ),
+                numericInput(
+                  inputId = "maxPointsCountry",
+                  label = "Maximum points to view:",
+                  value = 100
+                ),
+                numericInput(
+                  inputId = "minPriceCountry",
+                  label = "Minimum price to view:",
+                  value = 0
+                ),
+                numericInput(
+                  inputId = "maxPriceCountry",
+                  label = "Maximum price to view:",
+                  value = 2300
                 )
               ),
               # Main panel for displaying outputs ----
               mainPanel(
                 # Create a new row for the table.
                 DT::dataTableOutput("table_varieties_for_country"),
-                plotOutput("plot")
+                plotOutput("plot_country")
                 
               )
             )
@@ -67,10 +84,34 @@ ui <- fluidPage(navbarPage(title = 'find your wine!',
                 sidebarLayout(
                   # Sidebar panel for inputs ----
                   sidebarPanel(
-                    
+                    # Input: Selector for choosing dataset ----
+                    uiOutput('all_varieties2'),
+                    numericInput(
+                      inputId = "minPointsVariety",
+                      label = "Minimum points to view:",
+                      value = 0
+                    ),
+                    numericInput(
+                      inputId = "maxPointsVariety",
+                      label = "Maximum points to view:",
+                      value = 100
+                    ),
+                    numericInput(
+                      inputId = "minPriceVariety",
+                      label = "Minimum price to view:",
+                      value = 0
+                    ),
+                    numericInput(
+                      inputId = "maxPriceVariety",
+                      label = "Maximum price to view:",
+                      value = 2300
+                    )
                   ),
                   # Main panel for displaying outputs ----
                   mainPanel(
+                    # Create a new row for the table.
+                    DT::dataTableOutput("table_countries_for_variety"),
+                    plotOutput("plot_variety")
                     
                   )
                 )
