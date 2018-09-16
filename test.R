@@ -2,18 +2,20 @@ install.packages("dplyr", dependencies = TRUE)
 install.packages("ggplot2")
 install.packages("forcats")
 install.packages("DT")
+install.packages("ggformula")
 #install.packages("ddply")
 
 library(ggplot2)
 library(dplyr)
+library(ggformula)
 
 # load file
-wine_reviews <- read.csv("****/winemag-data_first150k.csv")
+wine_reviews <- read.csv("/Users/christianelser/github/findYourWine/winemag-data_first150k.csv")
 # filter all out without price value
 all_with_price <- select(filter(wine_reviews, trimws(price) !=""), c(country, points, price, variety))
 # add column ratio
 all_with_price <- transform(all_with_price, price_points_ratio = price / points)
-View(all_with_price).rd
+View(all_with_price)
 # get average points per country
 average_points_country <- all_with_price %>% group_by(country) %>% summarise(mean_points = mean(points))
 View(average_points_country)
@@ -81,3 +83,6 @@ p + theme_grey(base_size = base_size)
 + scale_y_discrete(expand = c(0, 0)) 
 + opts(legend.position = "none", axis.ticks = theme_blank(), 
        axis.text.x = theme_text(size = base_size * 0.8, angle = 330, hjust = 0, colour = "grey50"))
+
+plot <- gf_point(price ~ points, data = all_with_price)
+View(plot)
